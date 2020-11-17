@@ -1,0 +1,94 @@
+﻿<Window x:Class="EventLogger.ReOrderCommandsWinView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Name="view"
+        Title="ReOrderCommandsWinView"
+        Width="600"
+        Height="300"
+        DataContext="{Binding ElementName=view}">
+    <Window.Resources>
+        <!--  DataGrid样式  -->
+        <Style x:Key="MainDataGridStyle" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="SelectionMode" Value="Extended" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+            <Setter Property="CanUserAddRows" Value="False" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <!--  表格  -->
+        <Grid x:Name="HisDataGrid" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <!--  左表格  -->
+            <DataGrid x:Name="MouseHisDataGrid"
+                      AllowDrop="True"
+                      PreviewMouseLeftButtonDown="MouseHisDataGrid_OnPreviewMouseLeftButtonDown"
+                      ItemsSource="{Binding Path=MouseHisDataList}"
+                      Style="{StaticResource MainDataGridStyle}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="AddMenuItem_Mouse"
+                                  Click="AddMenuItem_Mouse_OnClick"
+                                  Header="新增" />
+                        <MenuItem x:Name="DeleteMenuItem_Mouse"
+                                  Click="DeleteMenuItem_Mouse_OnClick"
+                                  Header="删除" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Width="*"
+                                        Binding="{Binding FileName}"
+                                        Header="文件名称" />
+                    <DataGridTextColumn Binding="{Binding OpDiffTime}" Header="执行间隔(毫秒)" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <!--  右表格  -->
+            <DataGrid x:Name="KeyHisDataGrid"
+                      Grid.Column="1"
+                      ItemsSource="{Binding Path=KeyHisDataList}"
+                      Style="{StaticResource MainDataGridStyle}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="AddMenuItem_Key"
+                                  Click="AddMenuItem_Key_OnClick"
+                                  Header="新增" />
+                        <MenuItem x:Name="DeleteMenuItem_Key"
+                                  Click="DeleteMenuItem_Key_OnClick"
+                                  Header="删除" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Width="*"
+                                        Binding="{Binding FileName}"
+                                        Header="文件名称" />
+                    <DataGridTextColumn Binding="{Binding OpDiffTime}" Header="执行间隔(毫秒)" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <!--  拖拽分割  -->
+            <GridSplitter Grid.Column="0" Width="2" />
+        </Grid>
+        <!--  确定/取消  -->
+        <DockPanel Grid.Row="1" HorizontalAlignment="Center">
+            <Button x:Name="btnOK"
+                    Width="40"
+                    Height="24"
+                    Click="BtnOK_OnClick"
+                    Content="确定"
+                    IsDefault="True" />
+            <Button x:Name="btnCancel"
+                    Width="40"
+                    Height="24"
+                    Margin="20,0,0,0"
+                    Content="取消"
+                    IsCancel="True" />
+        </DockPanel>
+    </Grid>
+</Window>

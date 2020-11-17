@@ -1,0 +1,219 @@
+﻿<Window x:Class="EventLogger.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:WPFComponent.Converters;assembly=WPFComponent"
+        xmlns:dateTimeConverter="clr-namespace:WPFComponent.Converters.DateTimeConverter;assembly=WPFComponent"
+        xmlns:extension="clr-namespace:WPFComponent.Extension;assembly=WPFComponent"
+        xmlns:mouseKeyboardLibrary="clr-namespace:MouseKeyboardLibrary"
+        x:Name="View"
+        Title="键鼠模拟器 By chenhao 6112562a@163.com"
+        Width="620"
+        Height="350"
+        DataContext="{Binding ElementName=View}"
+        Loaded="MainWindow_OnLoaded"
+        Unloaded="MainWindow_OnUnloaded">
+    <Window.Resources>
+        <converters:KeyCode2StringConverter x:Key="KeyCode2StringConverter" />
+        <dateTimeConverter:MillisecondTimeConverter x:Key="MillisecondTimeConverter" />
+        <!--  DataGrid样式  -->
+        <Style x:Key="MainDataGridStyle" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="SelectionMode" Value="Extended" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Menu x:Name="TopMenu"
+              Height="26"
+              VerticalAlignment="Top">
+            <MenuItem x:Name="FileMenuItem" Header="文件(_F)">
+                <MenuItem x:Name="OpenLogMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="OpenLogMenuItem_OnClick"
+                          Header="打开日志" />
+                <MenuItem x:Name="CombineLogMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="CombineLogMenuItem_OnClick"
+                          Header="组合日志" />
+                <MenuItem x:Name="SaveLogMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="SaveLogMenuItem_OnClick"
+                          Header="保存日志" />
+            </MenuItem>
+            <MenuItem x:Name="FuncMenuItem" Header="功能(_G)">
+                <MenuItem x:Name="MouseSimulateMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="MouseSimulateMenuItem_OnClick"
+                          Header="模拟鼠标" />
+                <MenuItem x:Name="AllSimulateMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="AllSimulateMenuItem_OnClick"
+                          Header="模拟操作" />
+                <MenuItem x:Name="ClearHisMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="ClearHisMenuItem_OnClick"
+                          Header="清空历史" />
+                <MenuItem x:Name="GetMousePosMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="GetMousePosMenuItem_OnClick"
+                          Header="鼠标位置" />
+                <MenuItem x:Name="SetExcuteTimeSpanMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="SetExcuteTimeSpanMenuItem_OnClick"
+                          Header="定时执行" />
+                <MenuItem x:Name="TestMenuItem"
+                          Width="149"
+                          HorizontalAlignment="Left"
+                          Click="TestMenuItem_OnClick"
+                          Header="测试" />
+            </MenuItem>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Text="开启鼠标捕捉：" />
+                <ToggleButton x:Name="MouseHookToggleButton"
+                              Checked="MouseHookToggleButton_OnChecked"
+                              Unchecked="MouseHookToggleButton_OnUnchecked" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Text="开启键盘捕捉：" />
+                <ToggleButton x:Name="KeyHookToggleButton"
+                              Checked="KeyHookToggleButton_OnChecked"
+                              Unchecked="KeyHookToggleButton_OnUnchecked" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Text="共执行：" />
+                <ToggleButton x:Name="RepeatToggleButton" IsChecked="{Binding IsRepeat}" />
+                <TextBox Margin="4,0,4,0" Text="{Binding RepeatTimes}" x:Name="RepeatTimesTextBox" Width="30" />
+                <TextBlock VerticalAlignment="Center" Text="次" />
+            </StackPanel>
+        </Menu>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!--  左表格  -->
+            <DataGrid x:Name="MouseHisDataGrid"
+                      ItemsSource="{Binding Path=MouseHisDataList}"
+                      Style="{StaticResource MainDataGridStyle}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="AddMenuItem_Mouse"
+                                  Click="AddMenuItem_Mouse_OnClick"
+                                  Header="新增" />
+                        <MenuItem x:Name="DeleteMenuItem_Mouse"
+                                  Click="DeleteMenuItem_Mouse_OnClick"
+                                  Header="删除" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding XPosition}" Header="X" />
+                    <DataGridTextColumn Binding="{Binding YPosition}" Header="Y" />
+                    <DataGridTemplateColumn Header="类型">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding MouseEventType}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox DisplayMemberPath="DisplayName"
+                                          ItemsSource="{extension:EnumToItemsSource {x:Type mouseKeyboardLibrary:MouseEventType}}"
+                                          SelectedValue="{Binding Path=MouseEventType}"
+                                          SelectedValuePath="Value" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="按钮">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ClickButton}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox DisplayMemberPath="DisplayName"
+                                          ItemsSource="{extension:EnumToItemsSource {x:Type MouseButton}}"
+                                          SelectedValue="{Binding Path=ClickButton}"
+                                          SelectedValuePath="Value" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Binding="{Binding ClickCount}" Header="点击次数" />
+                    <DataGridTextColumn Binding="{Binding MouseWheelDelta}" Header="滚轮值" />
+                    <DataGridTextColumn Binding="{Binding EventTimeStamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss fff}, Converter={StaticResource MillisecondTimeConverter}}" Header="时间戳" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <!--  右表格  -->
+            <DataGrid x:Name="KeyHisDataGrid"
+                      Grid.Column="1"
+                      ItemsSource="{Binding Path=KeyHisDataList}"
+                      Style="{StaticResource MainDataGridStyle}">
+                <DataGrid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="AddMenuItem_Key"
+                                  Click="AddMenuItem_Key_OnClick"
+                                  Header="新增" />
+                        <MenuItem x:Name="DeleteMenuItem_Key"
+                                  Click="DeleteMenuItem_Key_OnClick"
+                                  Header="删除" />
+                    </ContextMenu>
+                </DataGrid.ContextMenu>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Key">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Key, Converter={StaticResource KeyCode2StringConverter}}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox DisplayMemberPath="DisplayName"
+                                          ItemsSource="{extension:EnumToItemsSource {x:Type Key}}"
+                                          SelectedValue="{Binding Path=Key}"
+                                          SelectedValuePath="Value" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="类型">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding InputKeyType}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox DisplayMemberPath="DisplayName"
+                                          ItemsSource="{extension:EnumToItemsSource {x:Type mouseKeyboardLibrary:KeyType}}"
+                                          SelectedValue="{Binding Path=InputKeyType}"
+                                          SelectedValuePath="Value" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Binding="{Binding EventTimeStamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss fff}, Converter={StaticResource MillisecondTimeConverter}}" Header="时间戳" />
+                    <DataGridTextColumn Binding="{Binding InputString}" Header="执行输入字符串" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <!--  拖拽分割  -->
+            <GridSplitter Grid.Column="0" Width="2" />
+        </Grid>
+        <StatusBar HorizontalAlignment="Stretch" Height="30" Margin="0" Grid.Row="2" VerticalAlignment="Stretch" >
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding StatusTip}"></TextBlock>
+            </StackPanel>
+        </StatusBar>
+    </Grid>
+</Window>
